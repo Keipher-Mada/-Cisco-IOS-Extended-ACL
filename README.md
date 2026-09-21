@@ -12,8 +12,7 @@ traffic.
 
 ## Network Topology
 
-Network topology diagram:
-../topology.png
+![Cisco ACL Firewall Lab Topology](topology.png)
 
 The environment contains two separate IPv4 networks:
 
