@@ -1,0 +1,95 @@
+! ============================================================
+! Cisco IOS Extended ACL - Firewall / Packet Filtering Lab
+! ============================================================
+!
+! Client Network: 192.168.1.0/24
+! Server Network: 192.168.2.0/24
+!
+! Bob:             192.168.1.100
+! Alice:           192.168.1.101
+! Admin:           192.168.1.102
+! Kiosk:           192.168.1.103
+!
+! Web/FTP Server:  192.168.2.100
+! Email Server:    192.168.2.101
+!
+! Router G0/0:     192.168.1.1
+! Router G0/1:     192.168.2.1
+! ============================================================
+
+
+enable
+configure terminal
+
+
+! ------------------------------------------------------------
+! Configure router interfaces
+! ------------------------------------------------------------
+
+interface GigabitEthernet0/0
+ ip address 192.168.1.1 255.255.255.0
+ no shutdown
+ exit
+
+interface GigabitEthernet0/1
+ ip address 192.168.2.1 255.255.255.0
+ no shutdown
+ exit
+
+
+! ------------------------------------------------------------
+! Extended Access Control List 101
+! ------------------------------------------------------------
+
+ip access-list extended 101
+
+ ! Block Admin from SMTP (TCP/25)
+ deny tcp host 192.168.1.102 any eq 25
+
+ ! Block Admin from POP3 (TCP/110)
+ deny tcp host 192.168.1.102 any eq 110
+
+ ! Allow Admin to access FTP on the Web/FTP server
+ permit tcp host 192.168.1.102 host 192.168.2.100 eq 21
+
+ ! Block FTP access for all other clients
+ deny tcp any any eq 21
+
+ ! Prevent Bob from pinging the server subnet
+ deny icmp host 192.168.1.100 192.168.2.0 0.0.0.255
+
+ ! Prevent Alice from pinging the server subnet
+ deny icmp host 192.168.1.101 192.168.2.0 0.0.0.255
+
+ ! Completely block Kiosk access beyond the router
+ deny ip host 192.168.1.103 any
+
+ ! Permit all other authorised IP traffic
+ permit ip any any
+
+ exit
+
+
+! ------------------------------------------------------------
+! Apply ACL inbound on the client-facing interface
+! ------------------------------------------------------------
+
+interface GigabitEthernet0/0
+ ip access-group 101 in
+ exit
+
+
+! ------------------------------------------------------------
+! Save configuration
+! ------------------------------------------------------------
+
+end
+write memory
+
+
+! ------------------------------------------------------------
+! Verification Commands
+! ------------------------------------------------------------
+
+show ip access-lists 101
+show ip interface GigabitEthernet0/0
