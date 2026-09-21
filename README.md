@@ -12,6 +12,9 @@ traffic.
 
 ## Network Topology
 
+Network topology diagram:
+../topology.png
+
 The environment contains two separate IPv4 networks:
 
 - Client LAN: `192.168.1.0/24`
